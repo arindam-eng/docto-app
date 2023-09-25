@@ -2,7 +2,6 @@
 'use client'
 import DoctorList from '@/components/home/DoctorList';
 import DoctorSearchForm from '@/components/home/DoctorSearchForm';
-import PlacesAutocomplete from '@/components/home/PlacesAutocomplete';
 import React from 'react';
 
 const HomePage = () => {
@@ -23,7 +22,6 @@ const HomePage = () => {
 					<hr />
 					{/* List of Doctors */}
 					<DoctorList />
-          <PlacesAutocomplete />
 				</div>
 			</main>
 		</div>
