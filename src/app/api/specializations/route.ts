@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getCities } from './service';
+import { getSpecializations } from './service';
 
 export const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const cities = await getCities(req.url as string);
-        return NextResponse.json({ data: cities });
+        const specializations = await getSpecializations();
+        return NextResponse.json({ data: specializations });
     } catch (err) {
         console.log(err);
         return new NextResponse(
