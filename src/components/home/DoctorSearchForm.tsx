@@ -1,15 +1,61 @@
 'use client';
 // import { getCurrentLocation } from '@/helper/util.helper';
+import queryString from 'query-string';
 import React, { useEffect, useState } from 'react';
 import Autocomplete from './Autocomplete';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const DoctorSearchForm = () => {
+	const router = useRouter();
+	const serachParams = useSearchParams();
+	const cityId = serachParams.get('cityId');
+	const specializationId = serachParams.get('specializationId');
 	const [citySuggestions, setCitySuggestions] = useState<any>([]);
 	const [specializationSuggestions, setSpecializationSuggestions] =
 		useState<any>([]);
 	const [selectedCityLocation, setSelectedCityLocation] = useState<any>({});
 	const [selectedSpecialization, setSelectedSpecialization] = useState<any>({});
+
+	const fetchDoctors = async (
+		lat: number,
+		lon: number,
+		specializationId: number,
+		skip: number = 0
+	) => {
+		try {
+			const response = await fetch(
+				`http://localhost:3000/api/doctors?lat=${lat}&lon=${lon}&specializationId=${specializationId}&skip=${skip}`,
+				{
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+
+			const data = await response.json();
+			console.log('====================================');
+			console.log(data.data);
+			console.log('====================================');
+		} catch (error) {
+			console.error('Error fetching doctors:', error);
+		}
+	};
+
+	useEffect(() => {
+		if (selectedCityLocation?.lon && selectedSpecialization.id) {
+			fetchDoctors(
+				selectedCityLocation?.lat,
+				selectedCityLocation?.lon,
+				selectedSpecialization?.id,
+				0
+			);
+		}
+	}, [selectedCityLocation, selectedSpecialization.id]);
 
 	useEffect(() => {
 		const fetchCities = async () => {
@@ -26,9 +72,17 @@ const DoctorSearchForm = () => {
 				}
 
 				const data = await response.json();
-				setCitySuggestions([...data.data]);
+				if (data?.data?.length > 0) {
+					setCitySuggestions([...data.data]);
+					if (cityId) {
+						const city = data.data.find(
+							(city: { _id: string }) => city._id === cityId
+						);
+						setSelectedCityLocation(city);
+					}
+				}
 			} catch (error) {
-				console.error('Error fetching data:', error);
+				console.error('Error fetching cities:', error);
 			}
 		};
 
@@ -49,14 +103,25 @@ const DoctorSearchForm = () => {
 				}
 
 				const data = await response.json();
-				setSpecializationSuggestions([...data.data]);
+				if (data?.data?.length > 0) {
+					if (specializationId) {
+						setSelectedSpecialization(
+							data.data.find(
+								(spec: { id: string }) =>
+									Number(spec.id) === Number(specializationId)
+							)
+						);
+					}
+					setSpecializationSuggestions([...data.data]);
+				}
 			} catch (error) {
-				console.error('Error fetching data:', error);
+				console.error('Error fetching specs:', error);
 			}
 		};
 
 		fetchCities();
 		fetchSpecializations();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const handleCitySelect = (city: any) => {
@@ -67,10 +132,22 @@ const DoctorSearchForm = () => {
 		setSelectedSpecialization(specialization);
 	};
 
-	const router = useRouter();
 	const searchHanlder = async () => {
-        router.push('/doctors')
-    };
+		if (
+			!Object.keys(selectedCityLocation).length &&
+			!Object.keys(selectedSpecialization).length
+		) {
+			alert('Please select');
+			return;
+		}
+		const queryStringData = queryString.stringify({
+			...selectedCityLocation,
+			...selectedSpecialization,
+			specializationId: selectedSpecialization.id,
+			cityId: selectedCityLocation._id,
+		});
+		router.push(`/doctors?${queryStringData}`);
+	};
 
 	return (
 		<div className='flex flex-col md:flex-row md:items-center mb-4'>
@@ -86,6 +163,7 @@ const DoctorSearchForm = () => {
 					suggestions={citySuggestions}
 					onSelect={handleCitySelect}
 					myLocation={true}
+					input={selectedCityLocation.name}
 				/>
 			</div>
 
@@ -101,6 +179,7 @@ const DoctorSearchForm = () => {
 					suggestions={specializationSuggestions}
 					onSelect={handleSpecializationsSelect}
 					myLocation={false}
+					input={selectedSpecialization.name}
 				/>
 			</div>
 

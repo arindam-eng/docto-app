@@ -1,8 +1,15 @@
+'use client'
 import DoctorListItem from '@/components/doctors/DoctorListItem';
 import Pagination from '@/components/common/Pagination';
 import React from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const DoctorList = () => {
+	const serachParams = useSearchParams();
+	
+	console.log('====================================');
+	console.log(serachParams.get('lon'));
+	console.log('====================================');
 	const doctors = [
 		{
 			id: 1,
@@ -27,6 +34,7 @@ const DoctorList = () => {
 		},
 		// Add more doctors here
 	];
+
 	return (
 		<div>
 			<h2 className='text-xl font-semibold mb-4 text-green-400 mt-4'>

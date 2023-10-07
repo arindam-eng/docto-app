@@ -4,14 +4,16 @@ interface AutocompleteInputProps {
 	suggestions: Record<string, any>[];
 	onSelect: (value: Record<string, any>) => void;
 	myLocation?: boolean;
+	input?: string;
 }
 
 const Autocomplete: React.FC<AutocompleteInputProps> = ({
 	suggestions,
 	onSelect,
 	myLocation,
+	input,
 }) => {
-	const [inputValue, setInputValue] = useState<string>('');
+	const [inputValue, setInputValue] = useState<string>(input || '');
 	const [filteredSuggestions, setFilteredSuggestions] = useState<any[]>([]);
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,6 +34,12 @@ const Autocomplete: React.FC<AutocompleteInputProps> = ({
 	};
 
 	const [showSuggestions, setShowSuggestions] = useState(false);
+
+	useEffect(() => {
+		if(input){
+			setInputValue(input)
+		}
+	}, [input])
 
 	const wrapperRef = useRef<any>(null);
 	useEffect(() => {
